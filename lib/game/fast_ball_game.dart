@@ -9,7 +9,6 @@ import 'components/buff_orb.dart';
 import 'models/augment.dart';
 import 'utils/collection_manager.dart';
 import 'utils/collision_system.dart';
-import '../ui/overlays/upgrade_menu.dart';
 
 class FastBallGame extends FlameGame with CollisionSystem {
   // --- 고정 월드 해상도 (모든 기기에서 동일한 게임 좌표계) ---
@@ -341,7 +340,16 @@ class FastBallGame extends FlameGame with CollisionSystem {
   // --- Stage Management ---
 
   void _handleStageEnd() {
-    if (score >= targetScore) {
+    if (isBossStage) {
+      // 보스 스테이지: 보스가 살아있으면 게임오버, 죽었으면 클리어
+      final bossAlive = enemies.any((e) => e.isBoss && !e.isDead);
+      if (bossAlive) {
+        isGameOver = true;
+        overlays.add('GameOver');
+      } else {
+        _showUpgradeMenu();
+      }
+    } else if (score >= targetScore) {
       _showUpgradeMenu();
     } else {
       isGameOver = true;
