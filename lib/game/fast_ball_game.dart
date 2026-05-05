@@ -6,7 +6,6 @@ import 'components/ball.dart';
 import 'components/enemy_ball.dart';
 import 'components/buff_orb.dart';
 import 'models/augment.dart';
-import 'utils/vector_utils.dart';
 import 'utils/collection_manager.dart';
 import 'utils/collision_system.dart';
 
@@ -112,7 +111,9 @@ class FastBallGame extends FlameGame with CollisionSystem {
       position = arenaCenter + Vector2(cos(angle), sin(angle)) * distance;
       tries++;
       if (tries > 50) break;
-    } while (players.any((p) => (position - p.position).length < p.radius + 40));
+    } while (players.any(
+      (p) => (position - p.position).length < p.radius + 40,
+    ));
 
     final angle = random.nextDouble() * pi * 2;
     final enemy = EnemyBall(
@@ -180,12 +181,24 @@ class FastBallGame extends FlameGame with CollisionSystem {
     for (final enemy in enemies) {
       enemy.tickCooldown(safeDt);
       enemy.integrate(safeDt);
-      resolveWallCollision(enemy, arenaCenter, arenaRadius, random, angleRandomness);
+      resolveWallCollision(
+        enemy,
+        arenaCenter,
+        arenaRadius,
+        random,
+        angleRandomness,
+      );
     }
 
     for (final p in players) {
       p.integrate(safeDt);
-      resolveWallCollision(p, arenaCenter, arenaRadius, random, angleRandomness);
+      resolveWallCollision(
+        p,
+        arenaCenter,
+        arenaRadius,
+        random,
+        angleRandomness,
+      );
     }
 
     // Collisions
@@ -243,7 +256,13 @@ class FastBallGame extends FlameGame with CollisionSystem {
     if (enemy.isDead) return;
     enemy.position += dir * enemyKnockbackDistance;
     enemy.velocity = dir * enemy.fixedSpeed;
-    resolveWallCollision(enemy, arenaCenter, arenaRadius, random, angleRandomness);
+    resolveWallCollision(
+      enemy,
+      arenaCenter,
+      arenaRadius,
+      random,
+      angleRandomness,
+    );
   }
 
   void _checkOrbCollisions() {
@@ -348,7 +367,8 @@ class FastBallGame extends FlameGame with CollisionSystem {
     for (final p in players) {
       p.radius = 16 + playerRadiusBonus;
       p.fixedSpeed = playerBaseSpeed + playerSpeedBonus;
-      p.mass = (16 + playerRadiusBonus) * (16 + playerRadiusBonus) + playerMassBonus;
+      p.mass =
+          (16 + playerRadiusBonus) * (16 + playerRadiusBonus) + playerMassBonus;
       p.maintainSpeed();
     }
 
