@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flame/game.dart';
+import 'package:flame/camera.dart';
 import 'package:flutter/material.dart';
 import 'components/arena.dart';
 import 'components/ball.dart';
@@ -10,6 +11,10 @@ import 'utils/collection_manager.dart';
 import 'utils/collision_system.dart';
 
 class FastBallGame extends FlameGame with CollisionSystem {
+  // --- 고정 월드 해상도 (모든 기기에서 동일한 게임 좌표계) ---
+  static const double worldWidth = 400;
+  static const double worldHeight = 800;
+
   // --- Constants ---
   static const double playerBaseSpeed = 450;
   static const double enemyBaseSpeed = 180;
@@ -65,8 +70,14 @@ class FastBallGame extends FlameGame with CollisionSystem {
   Future<void> onLoad() async {
     await super.onLoad();
 
-    arenaCenter = size / 2;
-    arenaRadius = min(size.x, size.y) * 0.42;
+    // 고정 해상도 뷰포트 설정 - 모든 기기에서 동일한 게임 좌표계 사용
+    camera.viewport = FixedResolutionViewport(
+      resolution: Vector2(worldWidth, worldHeight),
+    );
+
+    // 월드 좌표는 고정 (size와 무관)
+    arenaCenter = Vector2(worldWidth / 2, worldHeight / 2);
+    arenaRadius = 170;
 
     add(ArenaComponent(center: arenaCenter, radius: arenaRadius));
 
@@ -163,7 +174,6 @@ class FastBallGame extends FlameGame with CollisionSystem {
   void update(double dt) {
     if (isGameOver || isPaused) return;
 
-    super.update(dt);
     final safeDt = dt.clamp(0.0, 1 / 60);
 
     // Update Timers
@@ -171,6 +181,7 @@ class FastBallGame extends FlameGame with CollisionSystem {
     if (timeRemaining <= 0) {
       timeRemaining = 0;
       _handleStageEnd();
+      return;
     }
 
     _updateBuffs(safeDt);
@@ -201,10 +212,17 @@ class FastBallGame extends FlameGame with CollisionSystem {
       );
     }
 
-    // Collisions
+    // 죽은 적 먼저 정리 (이미 삭제된 객체 참조 방지)
+    _checkEnemyHp();
+
+    // Collisions (살아있는 적만 참조하도록 collision_system에서 처리)
     resolveCollisions(players, enemies, _damageEnemy);
     _checkOrbCollisions();
+
+    // 충돌로 인해 새로 죽은 적들 정리
     _checkEnemyHp();
+
+    super.update(safeDt);
   }
 
   void _updateBuffs(double dt) {
@@ -296,25 +314,25 @@ class FastBallGame extends FlameGame with CollisionSystem {
   }
 
   void _checkEnemyHp() {
-    enemies.removeWhere((e) {
-      if (e.isDead) {
-        e.removeFromParent();
+    final deadEnemies = enemies.where((e) => e.isDead).toList();
+    if (deadEnemies.isEmpty) return;
 
-        double finalMultiplier = scoreMultiplier * bossPenaltyScoreMultiplier;
-        if (activeScoreBuffTimer > 0) finalMultiplier *= 2.0;
+    for (final e in deadEnemies) {
+      enemies.remove(e);
+      e.removeFromParent();
 
-        score += (100 * finalMultiplier).toInt();
-        timeRemaining += timeGainOnKill;
+      double finalMultiplier = scoreMultiplier * bossPenaltyScoreMultiplier;
+      if (activeScoreBuffTimer > 0) finalMultiplier *= 2.0;
 
-        if (!isBossStage) {
-          _spawnEnemy();
-        } else if (e.isBoss) {
-          _handleBossDeath();
-        }
-        return true;
+      score += (100 * finalMultiplier).toInt();
+      timeRemaining += timeGainOnKill;
+
+      if (!isBossStage) {
+        _spawnEnemy();
+      } else if (e.isBoss) {
+        _handleBossDeath();
       }
-      return false;
-    });
+    }
   }
 
   // --- Stage Management ---

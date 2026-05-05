@@ -25,18 +25,21 @@ class Ball extends PositionComponent {
     required this.color,
     required this.fixedSpeed,
     this.isPlayer = false,
-  })  : _radius = radius,
-        mass = radius * radius,
-        super(
-          size: Vector2.all(radius * 2),
-          anchor: Anchor.center,
-        );
+  }) : _radius = radius,
+       mass = radius * radius,
+       super(size: Vector2.all(radius * 2), anchor: Anchor.center);
 
   void integrate(double dt) => position += velocity * dt;
 
   void maintainSpeed() {
-    if (velocity.isZero()) return;
-    velocity = velocity.normalized() * fixedSpeed;
+    if (fixedSpeed <= 0) return;
+    final currentSpeed = velocity.length;
+    if (currentSpeed < 0.001) {
+      // 속도가 0에 가까우면 랜덤 방향으로 재설정
+      velocity = Vector2(1, 0) * fixedSpeed;
+    } else {
+      velocity = velocity.normalized() * fixedSpeed;
+    }
   }
 
   @override
