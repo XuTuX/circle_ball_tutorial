@@ -9,6 +9,7 @@ import 'components/buff_orb.dart';
 import 'models/augment.dart';
 import 'utils/collection_manager.dart';
 import 'utils/collision_system.dart';
+import '../ui/overlays/upgrade_menu.dart';
 
 class FastBallGame extends FlameGame with CollisionSystem {
   // --- 고정 월드 해상도 (모든 기기에서 동일한 게임 좌표계) ---
@@ -49,11 +50,13 @@ class FastBallGame extends FlameGame with CollisionSystem {
   double playerMassBonus = 0.0;
   List<Augment> currentAugmentOptions = [];
 
-  // --- Buffs & Synergies ---
+  // --- Held Augments & Synergies ---
+  final List<String> heldAugmentTitles = [];
   double orbSpawnTimer = 0;
   double activeScoreBuffTimer = 0;
   double activeSpeedBuffTimer = 0;
   final Set<String> activeSynergies = {};
+  final Set<String> synergyDisplayTexts = {};
 
   // --- Boss & Penalty ---
   String? currentPenalty;
@@ -246,7 +249,7 @@ class FastBallGame extends FlameGame with CollisionSystem {
   }
 
   void _applySynergyEffects(double dt) {
-    if (activeSynergies.contains('Planet Gravity')) {
+    if (activeSynergies.contains('행성 중력')) {
       for (final enemy in enemies) {
         if (players.isEmpty) continue;
         Ball nearest = players.first;
@@ -380,6 +383,7 @@ class FastBallGame extends FlameGame with CollisionSystem {
         break;
     }
 
+    heldAugmentTitles.add(augment.title);
     CollectionManager().discoverAugment(augment.title);
 
     for (final p in players) {
@@ -395,13 +399,16 @@ class FastBallGame extends FlameGame with CollisionSystem {
   }
 
   void _checkSynergies() {
+    synergyDisplayTexts.clear();
     if (playerSpeedBonus > 200 && players.length > 1) {
-      activeSynergies.add('Afterimage');
-      CollectionManager().discoverSynergy('Afterimage');
+      activeSynergies.add('잔상');
+      synergyDisplayTexts.add('잔상: 속도 극대화!');
+      CollectionManager().discoverSynergy('잔상');
     }
     if (playerRadiusBonus > 10 && playerMassBonus > 1.0) {
-      activeSynergies.add('Planet Gravity');
-      CollectionManager().discoverSynergy('Planet Gravity');
+      activeSynergies.add('행성 중력');
+      synergyDisplayTexts.add('행성 중력: 적을 끌어당깁니다');
+      CollectionManager().discoverSynergy('행성 중력');
     }
   }
 
@@ -429,7 +436,7 @@ class FastBallGame extends FlameGame with CollisionSystem {
     }
     enemies.clear();
 
-    final penalties = ['Score 0.5x', 'Enemy Armor +1', 'Speed -20%'];
+    final penalties = ['점수 절반', '적 방어 +1', '속도 -20%'];
     currentPenalty = penalties[random.nextInt(penalties.length)];
 
     _applyPenalty(currentPenalty!);
@@ -442,13 +449,13 @@ class FastBallGame extends FlameGame with CollisionSystem {
     enemyArmorBonus = 0;
 
     switch (penalty) {
-      case 'Score 0.5x':
+      case '점수 절반':
         bossPenaltyScoreMultiplier = 0.5;
         break;
-      case 'Enemy Armor +1':
+      case '적 방어 +1':
         enemyArmorBonus = 1;
         break;
-      case 'Speed -20%':
+      case '속도 -20%':
         for (final p in players) {
           p.fixedSpeed *= 0.8;
           p.maintainSpeed();
@@ -475,7 +482,9 @@ class FastBallGame extends FlameGame with CollisionSystem {
     playerRadiusBonus = 0.0;
     playerMassBonus = 0.0;
 
+    heldAugmentTitles.clear();
     activeSynergies.clear();
+    synergyDisplayTexts.clear();
     orbs.clear();
 
     for (final p in players) {

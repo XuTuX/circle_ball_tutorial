@@ -26,7 +26,9 @@ class EnemyBall extends Ball {
     required super.fixedSpeed,
     required this.hitCooldownDuration,
     this.isBoss = false,
-  }) : super(color: isBoss ? Colors.deepPurpleAccent : Colors.greenAccent) {
+  }) : super(
+         color: isBoss ? const Color(0xFF7E57C2) : const Color(0xFF66BB6A),
+       ) {
     _textPainter = TextPainter(textDirection: TextDirection.ltr);
     _updateTextPainter();
   }
@@ -35,7 +37,7 @@ class EnemyBall extends Ball {
     _textPainter.text = TextSpan(
       text: '$_hp',
       style: TextStyle(
-        color: isBoss ? Colors.white : Colors.black,
+        color: isBoss ? Colors.white : Colors.white,
         fontSize: isBoss ? 20 : 9,
         fontWeight: FontWeight.bold,
       ),
@@ -46,10 +48,10 @@ class EnemyBall extends Ball {
   void _updateColor() {
     if (!isBoss) {
       color = [
-        Colors.redAccent,
-        Colors.redAccent,
-        Colors.yellowAccent,
-        Colors.greenAccent
+        const Color(0xFFEF5350), // 빨강 (HP 0)
+        const Color(0xFFEF5350), // 빨강 (HP 1)
+        const Color(0xFFFFCA28), // 노랑 (HP 2)
+        const Color(0xFF66BB6A), // 초록 (HP 3)
       ][_hp.clamp(0, 3)];
     }
   }
@@ -68,6 +70,8 @@ class EnemyBall extends Ball {
   void render(Canvas canvas) {
     super.render(canvas);
     _textPainter.paint(
-        canvas, Offset(radius - _textPainter.width / 2, radius - _textPainter.height / 2));
+      canvas,
+      Offset(radius - _textPainter.width / 2, radius - _textPainter.height / 2),
+    );
   }
 }

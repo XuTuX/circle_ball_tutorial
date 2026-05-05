@@ -35,7 +35,6 @@ class Ball extends PositionComponent {
     if (fixedSpeed <= 0) return;
     final currentSpeed = velocity.length;
     if (currentSpeed < 0.001) {
-      // 속도가 0에 가까우면 랜덤 방향으로 재설정
       velocity = Vector2(1, 0) * fixedSpeed;
     } else {
       velocity = velocity.normalized() * fixedSpeed;
@@ -44,6 +43,25 @@ class Ball extends PositionComponent {
 
   @override
   void render(Canvas canvas) {
+    // 외부 광택
+    final glowPaint = Paint()
+      ..color = color.withAlpha(60)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
+    canvas.drawCircle(Offset(_radius, _radius), _radius, glowPaint);
+
+    // 본체
     canvas.drawCircle(Offset(_radius, _radius), _radius, _paint..color = color);
+
+    // 하이라이트 (광택 효과)
+    if (_radius > 5) {
+      final highlightPaint = Paint()
+        ..color = Colors.white.withAlpha(80)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
+      canvas.drawCircle(
+        Offset(_radius - _radius * 0.25, _radius - _radius * 0.25),
+        _radius * 0.35,
+        highlightPaint,
+      );
+    }
   }
 }
