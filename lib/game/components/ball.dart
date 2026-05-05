@@ -16,6 +16,8 @@ class Ball extends PositionComponent {
   Vector2 velocity;
   double mass;
 
+  final Paint _paint = Paint();
+
   Ball({
     required super.position,
     required double radius,
@@ -39,6 +41,6 @@ class Ball extends PositionComponent {
 
   @override
   void render(Canvas canvas) {
-    canvas.drawCircle(Offset(_radius, _radius), _radius, Paint()..color = color);
+    canvas.drawCircle(Offset(_radius, _radius), _radius, _paint..color = color);
   }
 }
