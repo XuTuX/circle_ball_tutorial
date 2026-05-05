@@ -1,6 +1,8 @@
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
+import '../utils/game_style.dart';
+
 class Ball extends PositionComponent {
   double _radius;
   double get radius => _radius;
@@ -17,6 +19,7 @@ class Ball extends PositionComponent {
   double mass;
 
   final Paint _paint = Paint();
+  final Paint _outlinePaint = GameStyle.inkOutlinePaint(3);
 
   Ball({
     required super.position,
@@ -43,23 +46,22 @@ class Ball extends PositionComponent {
 
   @override
   void render(Canvas canvas) {
-    // 외부 광택
-    final glowPaint = Paint()
-      ..color = color.withAlpha(60)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
-    canvas.drawCircle(Offset(_radius, _radius), _radius, glowPaint);
+    final center = Offset(_radius, _radius);
 
-    // 본체
-    canvas.drawCircle(Offset(_radius, _radius), _radius, _paint..color = color);
+    // 본체 (단색)
+    canvas.drawCircle(center, _radius, _paint..color = color);
 
-    // 하이라이트 (광택 효과)
+    // 외곽선 (굵은 잉크)
+    canvas.drawCircle(center, _radius, _outlinePaint);
+
+    // 낙서 같은 하이라이트 (짧은 곡선 하나)
     if (_radius > 5) {
-      final highlightPaint = Paint()
-        ..color = Colors.white.withAlpha(80)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
-      canvas.drawCircle(
-        Offset(_radius - _radius * 0.25, _radius - _radius * 0.25),
-        _radius * 0.35,
+      final highlightPaint = GameStyle.inkOutlinePaint(2)..color = Colors.white.withAlpha(180);
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: _radius * 0.7),
+        -2.0,
+        1.0,
+        false,
         highlightPaint,
       );
     }

@@ -1,14 +1,17 @@
 import 'dart:math';
 import 'package:flame/game.dart';
 import 'package:flame/camera.dart';
+import 'package:flame/effects.dart';
 import 'package:flutter/material.dart';
 import 'components/arena.dart';
 import 'components/ball.dart';
 import 'components/enemy_ball.dart';
 import 'components/buff_orb.dart';
+import 'components/damage_text.dart';
 import 'models/augment.dart';
 import 'utils/collection_manager.dart';
 import 'utils/collision_system.dart';
+import 'utils/game_style.dart';
 
 class FastBallGame extends FlameGame with CollisionSystem {
   // --- 고정 월드 해상도 (모든 기기에서 동일한 게임 좌표계) ---
@@ -102,7 +105,7 @@ class FastBallGame extends FlameGame with CollisionSystem {
       position: arenaCenter,
       radius: 16 + playerRadiusBonus,
       velocity: Vector2(cos(angle), sin(angle)) * speed,
-      color: Colors.orange,
+      color: GameStyle.primaryOrange,
       fixedSpeed: speed,
       isPlayer: true,
     );
@@ -152,7 +155,7 @@ class FastBallGame extends FlameGame with CollisionSystem {
       isBoss: true,
     );
     boss.hp = 20 + (enemyArmorBonus * 5);
-    boss.color = Colors.deepPurpleAccent;
+    boss.color = GameStyle.primaryBlue;
 
     enemies.add(boss);
     add(boss);
@@ -272,8 +275,15 @@ class FastBallGame extends FlameGame with CollisionSystem {
 
   void _damageEnemy(EnemyBall enemy, Vector2 dir) {
     if (!enemy.canTakeDamage) return;
+    
+    // 타격 효과음 대신 데미지 텍스트 출력
+    add(DamageText(text: 'HIT!', position: enemy.position.clone()));
+
     enemy.takeDamage();
-    if (enemy.isDead) return;
+    if (enemy.isDead) {
+      add(DamageText(text: 'BOOM!', position: enemy.position.clone()));
+      return;
+    }
     enemy.position += dir * enemyKnockbackDistance;
     enemy.velocity = dir * enemy.fixedSpeed;
     resolveWallCollision(

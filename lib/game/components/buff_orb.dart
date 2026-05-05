@@ -2,6 +2,8 @@ import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 import '../fast_ball_game.dart';
 
+import '../utils/game_style.dart';
+
 enum BuffType {
   speed, // 레드
   score, // 옐로우
@@ -23,17 +25,23 @@ class BuffOrb extends PositionComponent with HasGameReference<FastBallGame> {
   @override
   void render(Canvas canvas) {
     final color = type == BuffType.speed
-        ? Colors.redAccent
+        ? GameStyle.primaryRed
         : type == BuffType.score
-            ? Colors.yellowAccent
-            : Colors.blueAccent;
+            ? GameStyle.primaryYellow
+            : GameStyle.primaryBlue;
 
-    final paint = Paint()
-      ..color = color
-      ..maskFilter = const MaskFilter.blur(BlurStyle.outer, 4);
+    final center = Offset(radius, radius);
     
-    canvas.drawCircle(Offset(radius, radius), radius, paint);
-    canvas.drawCircle(Offset(radius, radius), radius * 0.7, Paint()..color = Colors.white.withAlpha(128));
+    // 본체
+    canvas.drawCircle(center, radius, Paint()..color = color);
+    
+    // 외곽선
+    canvas.drawCircle(center, radius, GameStyle.inkOutlinePaint(2.5));
+    
+    // 내부 십자 형태 (약간의 낙서 느낌)
+    final crossPaint = GameStyle.inkOutlinePaint(1.5)..color = Colors.white.withAlpha(200);
+    canvas.drawLine(Offset(radius, radius - 5), Offset(radius, radius + 5), crossPaint);
+    canvas.drawLine(Offset(radius - 5, radius), Offset(radius + 5, radius), crossPaint);
   }
 
   void onHit() {

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'ball.dart';
 
+import '../utils/game_style.dart';
+
 class EnemyBall extends Ball {
   int _hp = 3;
   int get hp => _hp;
@@ -27,7 +29,7 @@ class EnemyBall extends Ball {
     required this.hitCooldownDuration,
     this.isBoss = false,
   }) : super(
-         color: isBoss ? const Color(0xFF7E57C2) : const Color(0xFF66BB6A),
+         color: isBoss ? GameStyle.primaryBlue : GameStyle.primaryGreen,
        ) {
     _textPainter = TextPainter(textDirection: TextDirection.ltr);
     _updateTextPainter();
@@ -36,10 +38,9 @@ class EnemyBall extends Ball {
   void _updateTextPainter() {
     _textPainter.text = TextSpan(
       text: '$_hp',
-      style: TextStyle(
-        color: isBoss ? Colors.white : Colors.white,
-        fontSize: isBoss ? 20 : 9,
-        fontWeight: FontWeight.bold,
+      style: GameStyle.cartoonStyle(
+        fontSize: isBoss ? 24 : 12,
+        color: Colors.white,
       ),
     );
     _textPainter.layout();
@@ -48,10 +49,10 @@ class EnemyBall extends Ball {
   void _updateColor() {
     if (!isBoss) {
       color = [
-        const Color(0xFFEF5350), // 빨강 (HP 0)
-        const Color(0xFFEF5350), // 빨강 (HP 1)
-        const Color(0xFFFFCA28), // 노랑 (HP 2)
-        const Color(0xFF66BB6A), // 초록 (HP 3)
+        GameStyle.primaryRed,    // HP 0
+        GameStyle.primaryRed,    // HP 1
+        GameStyle.primaryYellow, // HP 2
+        GameStyle.primaryGreen,  // HP 3
       ][_hp.clamp(0, 3)];
     }
   }

@@ -8,6 +8,8 @@ import 'ui/overlays/game_over_overlay.dart';
 import 'ui/overlays/penalty_alert_overlay.dart';
 import 'ui/overlays/encyclopedia_overlay.dart';
 
+import 'game/utils/game_style.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await CollectionManager().init();
@@ -21,8 +23,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark(),
+      theme: ThemeData(
+        brightness: Brightness.light,
+        scaffoldBackgroundColor: GameStyle.paperBackground,
+      ),
       home: Scaffold(
+        backgroundColor: GameStyle.paperBackground,
         body: GameWidget<FastBallGame>(
           game: FastBallGame(),
           overlayBuilderMap: {

@@ -3,6 +3,8 @@ import '../../game/fast_ball_game.dart';
 import '../../game/models/augment.dart';
 import '../../game/utils/collection_manager.dart';
 
+import '../../game/utils/game_style.dart';
+
 class EncyclopediaOverlay extends StatelessWidget {
   final FastBallGame game;
   const EncyclopediaOverlay({super.key, required this.game});
@@ -17,34 +19,26 @@ class EncyclopediaOverlay extends StatelessWidget {
         width: 380,
         height: 500,
         padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: Colors.black.withAlpha(245),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.orangeAccent.withAlpha(100), width: 2),
-        ),
+        decoration: GameStyle.paperPanelDecoration,
         child: Column(
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('COLLECTION',
-                    style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.orangeAccent)),
+                Text('COLLECTION',
+                    style: GameStyle.cartoonStyle(fontSize: 24, color: GameStyle.primaryOrange)),
                 IconButton(
                   onPressed: () => game.overlays.remove('Encyclopedia'),
-                  icon: const Icon(Icons.close, color: Colors.white54),
+                  icon: const Icon(Icons.close, color: GameStyle.inkBlack),
                 ),
               ],
             ),
-            const Divider(color: Colors.white24, height: 32),
+            const Divider(color: GameStyle.inkBlack, thickness: 2, height: 32),
             Expanded(
               child: ListView(
                 children: [
-                  const Text('AUGMENTS',
-                      style: TextStyle(
-                          fontSize: 14, color: Colors.white54, letterSpacing: 2)),
+                  Text('AUGMENTS',
+                      style: GameStyle.cartoonStyle(fontSize: 14, shadowed: false)),
                   const SizedBox(height: 16),
                   ...allAugments.map((a) {
                     final isFound = discovered.contains(a.title);
@@ -52,29 +46,23 @@ class EncyclopediaOverlay extends StatelessWidget {
                       margin: const EdgeInsets.only(bottom: 8),
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: isFound
-                            ? Colors.white.withAlpha(15)
-                            : Colors.white.withAlpha(5),
-                        borderRadius: BorderRadius.circular(12),
+                        color: isFound ? GameStyle.primaryYellow.withAlpha(50) : Colors.transparent,
+                        border: Border.all(color: GameStyle.inkBlack, width: isFound ? 2 : 1),
                       ),
                       child: Row(
                         children: [
                           Icon(isFound ? a.icon : Icons.lock,
-                              color: isFound ? Colors.orangeAccent : Colors.white24),
+                              color: GameStyle.inkBlack),
                           const SizedBox(width: 16),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(isFound ? a.title : '???',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: isFound ? Colors.white : Colors.white24,
-                                    )),
+                                    style: GameStyle.cartoonStyle(fontSize: 14, shadowed: false)),
                                 if (isFound)
                                   Text(a.description,
-                                      style: const TextStyle(
-                                          fontSize: 12, color: Colors.white54)),
+                                      style: GameStyle.cartoonStyle(fontSize: 11, shadowed: false)),
                               ],
                             ),
                           ),
@@ -83,27 +71,21 @@ class EncyclopediaOverlay extends StatelessWidget {
                     );
                   }),
                   const SizedBox(height: 24),
-                  const Text('SYNERGIES',
-                      style: TextStyle(
-                          fontSize: 14, color: Colors.white54, letterSpacing: 2)),
+                  Text('SYNERGIES',
+                      style: GameStyle.cartoonStyle(fontSize: 14, shadowed: false)),
                   const SizedBox(height: 16),
                   ...CollectionManager().discoveredSynergies.map((s) => Container(
                         margin: const EdgeInsets.only(bottom: 8),
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Colors.orangeAccent.withAlpha(20),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                              color: Colors.orangeAccent.withAlpha(50)),
+                          color: GameStyle.primaryBlue.withAlpha(50),
+                          border: Border.all(color: GameStyle.inkBlack, width: 2),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.auto_awesome,
-                                color: Colors.orangeAccent),
+                            const Icon(Icons.auto_awesome, color: GameStyle.inkBlack),
                             const SizedBox(width: 16),
-                            Text(s,
-                                style:
-                                    const TextStyle(fontWeight: FontWeight.bold)),
+                            Text(s, style: GameStyle.cartoonStyle(fontSize: 14, shadowed: false)),
                           ],
                         ),
                       )),

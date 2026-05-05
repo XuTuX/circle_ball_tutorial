@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../game/fast_ball_game.dart';
 import '../../game/models/augment.dart';
+import '../../game/utils/game_style.dart';
 
 class HUDOverlay extends StatefulWidget {
   final FastBallGame game;
@@ -45,21 +46,12 @@ class _HUDOverlayState extends State<HUDOverlay> {
               children: [
                 Text(
                   game.stageDisplay,
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF37474F),
-                    letterSpacing: -0.5,
-                  ),
+                  style: GameStyle.cartoonStyle(fontSize: 22),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   '목표: ${_formatNumber(game.targetScore)}',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey.shade600,
-                  ),
+                  style: GameStyle.cartoonStyle(fontSize: 13, shadowed: false),
                 ),
               ],
             ),
@@ -75,22 +67,14 @@ class _HUDOverlayState extends State<HUDOverlay> {
               children: [
                 Text(
                   _formatNumber(game.score),
-                  style: const TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF37474F),
-                    letterSpacing: -0.5,
-                  ),
+                  style: GameStyle.cartoonStyle(fontSize: 28),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   '${game.timeRemaining.isFinite ? game.timeRemaining.clamp(0, 99).toStringAsFixed(1) : "0.0"}초',
-                  style: TextStyle(
+                  style: GameStyle.cartoonStyle(
                     fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: game.timeRemaining < 5
-                        ? const Color(0xFFE53935)
-                        : const Color(0xFF546E7A),
+                    color: game.timeRemaining < 5 ? GameStyle.primaryRed : GameStyle.inkBlack,
                   ),
                 ),
               ],
@@ -164,21 +148,15 @@ class _HUDOverlayState extends State<HUDOverlay> {
           child: Center(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.white.withAlpha(200),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(color: Colors.black.withAlpha(15), blurRadius: 6),
-                ],
-              ),
+              decoration: GameStyle.paperPanelDecoration,
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _miniOrb(const Color(0xFF4FC3F7), 'S'),
+                  _miniOrb(GameStyle.primaryBlue, 'S'),
                   const SizedBox(width: 14),
-                  _miniOrb(const Color(0xFFFFCA28), '★'),
+                  _miniOrb(GameStyle.primaryYellow, '★'),
                   const SizedBox(width: 14),
-                  _miniOrb(const Color(0xFF4DB6AC), 'T'),
+                  _miniOrb(GameStyle.primaryGreen, 'T'),
                 ],
               ),
             ),
@@ -191,17 +169,7 @@ class _HUDOverlayState extends State<HUDOverlay> {
   Widget _glassBox({required Widget child}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white.withAlpha(230),
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(15),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      decoration: GameStyle.paperPanelDecoration,
       child: child,
     );
   }
@@ -210,16 +178,15 @@ class _HUDOverlayState extends State<HUDOverlay> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: Colors.white.withAlpha(210),
-        borderRadius: BorderRadius.circular(6),
-        boxShadow: [BoxShadow(color: Colors.black.withAlpha(8), blurRadius: 4)],
+        color: GameStyle.inkBlack,
+        borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
         text,
         style: const TextStyle(
           fontSize: 10,
-          fontWeight: FontWeight.w700,
-          color: Color(0xFF78909C),
+          fontWeight: FontWeight.w900,
+          color: Colors.white,
           letterSpacing: 1,
         ),
       ),
@@ -231,25 +198,17 @@ class _HUDOverlayState extends State<HUDOverlay> {
       margin: const EdgeInsets.only(bottom: 4),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withAlpha(220),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: aug.color.withAlpha(120)),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 4),
-        ],
+        color: GameStyle.paperBackground,
+        border: Border.all(color: GameStyle.inkBlack, width: 2),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(aug.icon, size: 14, color: aug.color),
+          Icon(aug.icon, size: 14, color: GameStyle.inkBlack),
           const SizedBox(width: 6),
           Text(
             aug.title,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey.shade800,
-            ),
+            style: GameStyle.cartoonStyle(fontSize: 12, shadowed: false),
           ),
         ],
       ),
@@ -261,25 +220,17 @@ class _HUDOverlayState extends State<HUDOverlay> {
       margin: const EdgeInsets.only(bottom: 4),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withAlpha(220),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFCE93D8).withAlpha(180)),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 4),
-        ],
+        color: GameStyle.primaryBlue.withAlpha(100),
+        border: Border.all(color: GameStyle.inkBlack, width: 2),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.auto_awesome, size: 12, color: Color(0xFFAB47BC)),
+          const Icon(Icons.auto_awesome, size: 12, color: GameStyle.inkBlack),
           const SizedBox(width: 6),
           Text(
             text,
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF6A1B9A),
-            ),
+            style: GameStyle.cartoonStyle(fontSize: 11, shadowed: false),
           ),
         ],
       ),
@@ -291,23 +242,17 @@ class _HUDOverlayState extends State<HUDOverlay> {
       margin: const EdgeInsets.symmetric(horizontal: 4),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withAlpha(220),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withAlpha(150)),
-        boxShadow: [BoxShadow(color: color.withAlpha(50), blurRadius: 6)],
+        color: color,
+        border: Border.all(color: GameStyle.inkBlack, width: 2),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: color, size: 14),
+          Icon(icon, color: GameStyle.inkBlack, size: 14),
           const SizedBox(width: 4),
           Text(
             timer.isFinite ? timer.clamp(0, 99).toStringAsFixed(1) : "0.0",
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              color: Colors.grey.shade800,
-            ),
+            style: GameStyle.cartoonStyle(fontSize: 12, shadowed: false),
           ),
         ],
       ),
@@ -319,22 +264,18 @@ class _HUDOverlayState extends State<HUDOverlay> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 12,
-          height: 12,
+          width: 14,
+          height: 14,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: color,
-            boxShadow: [BoxShadow(color: color.withAlpha(100), blurRadius: 4)],
+            border: Border.all(color: GameStyle.inkBlack, width: 1.5),
           ),
         ),
         const SizedBox(width: 3),
         Text(
           label,
-          style: TextStyle(
-            fontSize: 9,
-            fontWeight: FontWeight.w600,
-            color: Colors.grey.shade700,
-          ),
+          style: GameStyle.cartoonStyle(fontSize: 10, shadowed: false),
         ),
       ],
     );
