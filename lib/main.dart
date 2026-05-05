@@ -1,5 +1,6 @@
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'game/fast_ball_game.dart';
 import 'game/utils/collection_manager.dart';
 import 'ui/overlays/hud_overlay.dart';
@@ -29,15 +30,22 @@ class MyApp extends StatelessWidget {
       ),
       home: Scaffold(
         backgroundColor: GameStyle.paperBackground,
-        body: GameWidget<FastBallGame>(
-          game: FastBallGame(),
-          overlayBuilderMap: {
-            'HUD': (context, game) => HUDOverlay(game: game),
-            'UpgradeMenu': (context, game) => UpgradeMenuOverlay(game: game),
-            'GameOver': (context, game) => GameOverOverlay(game: game),
-            'PenaltyAlert': (context, game) => PenaltyAlertOverlay(game: game),
-            'Encyclopedia': (context, game) => EncyclopediaOverlay(game: game),
+        body: Shortcuts(
+          shortcuts: <ShortcutActivator, Intent>{
+            LogicalKeySet(LogicalKeyboardKey.metaLeft): const DoNothingIntent(),
+            LogicalKeySet(LogicalKeyboardKey.metaRight): const DoNothingIntent(),
           },
+          child: GameWidget<FastBallGame>(
+            game: FastBallGame(),
+            autofocus: true,
+            overlayBuilderMap: {
+              'HUD': (context, game) => HUDOverlay(game: game),
+              'UpgradeMenu': (context, game) => UpgradeMenuOverlay(game: game),
+              'GameOver': (context, game) => GameOverOverlay(game: game),
+              'PenaltyAlert': (context, game) => PenaltyAlertOverlay(game: game),
+              'Encyclopedia': (context, game) => EncyclopediaOverlay(game: game),
+            },
+          ),
         ),
       ),
     );

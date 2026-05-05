@@ -282,7 +282,6 @@ class _HUDOverlayState extends State<HUDOverlay> {
   }
 
   String _formatNumber(int n) {
-    if (n >= 10000) return '${(n / 1000).toStringAsFixed(1)}k';
     if (n >= 1000) return '${(n / 1000).toStringAsFixed(1)}k';
     return n.toString();
   }

@@ -74,21 +74,39 @@ class EncyclopediaOverlay extends StatelessWidget {
                   Text('SYNERGIES',
                       style: GameStyle.cartoonStyle(fontSize: 14, shadowed: false)),
                   const SizedBox(height: 16),
-                  ...CollectionManager().discoveredSynergies.map((s) => Container(
+                   ...SynergyInfo.all.map((s) {
+                     final isFound = CollectionManager().discoveredSynergies.contains(s.name);
+                     return Container(
                         margin: const EdgeInsets.only(bottom: 8),
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: GameStyle.primaryBlue.withAlpha(50),
-                          border: Border.all(color: GameStyle.inkBlack, width: 2),
+                          color: isFound ? GameStyle.primaryBlue.withAlpha(50) : Colors.transparent,
+                          border: Border.all(color: GameStyle.inkBlack, width: isFound ? 2 : 1),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.auto_awesome, color: GameStyle.inkBlack),
+                            Icon(isFound ? Icons.auto_awesome : Icons.lock, color: GameStyle.inkBlack),
                             const SizedBox(width: 16),
-                            Text(s, style: GameStyle.cartoonStyle(fontSize: 14, shadowed: false)),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(isFound ? s.name : '???',
+                                      style: GameStyle.cartoonStyle(fontSize: 14, shadowed: false)),
+                                  if (isFound) ...[
+                                    Text(s.description,
+                                        style: GameStyle.cartoonStyle(fontSize: 11, shadowed: false)),
+                                    const SizedBox(height: 4),
+                                    Text('조건: ${s.condition}',
+                                        style: GameStyle.cartoonStyle(fontSize: 9, color: Colors.grey[700]!, shadowed: false)),
+                                  ],
+                                ],
+                              ),
+                            ),
                           ],
                         ),
-                      )),
+                      );
+                   }),
                 ],
               ),
             ),

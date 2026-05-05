@@ -1,8 +1,9 @@
 import 'dart:math';
 import 'package:flame/game.dart';
+import 'package:flame/input.dart';
 import 'package:flame/camera.dart';
-import 'package:flame/effects.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'components/arena.dart';
 import 'components/ball.dart';
 import 'components/enemy_ball.dart';
@@ -13,7 +14,7 @@ import 'utils/collection_manager.dart';
 import 'utils/collision_system.dart';
 import 'utils/game_style.dart';
 
-class FastBallGame extends FlameGame with CollisionSystem {
+class FastBallGame extends FlameGame with KeyboardEvents, CollisionSystem {
   // --- 고정 월드 해상도 (모든 기기에서 동일한 게임 좌표계) ---
   static const double worldWidth = 400;
   static const double worldHeight = 800;
@@ -63,13 +64,14 @@ class FastBallGame extends FlameGame with CollisionSystem {
   // --- Boss & Penalty ---
   String? currentPenalty;
   double bossPenaltyScoreMultiplier = 1.0;
+  double penaltySpeedMultiplier = 1.0; // New: To separate penalty from base speed
   int enemyArmorBonus = 0;
 
   // --- Getters ---
   String get stageDisplay =>
       '${(currentStageIndex ~/ 3) + 1}-${(currentStageIndex % 3) + 1}${isBossStage ? " (BOSS)" : ""}';
   bool get isBossStage => (currentStageIndex % 3) == 2;
-  int get targetScore => (500 * pow(2.5, currentStageIndex)).toInt();
+  int get targetScore => (500 + (currentStageIndex * 750)).toInt(); // More manageable linear growth
 
   @override
   Future<void> onLoad() async {
@@ -171,6 +173,18 @@ class FastBallGame extends FlameGame with CollisionSystem {
 
     orbs.add(orb);
     add(orb);
+  }
+
+  // --- Input Handling ---
+
+  @override
+  KeyEventResult onKeyEvent(
+    KeyEvent event,
+    Set<LogicalKeyboardKey> keysPressed,
+  ) {
+    // macOS의 한글 IME 등에서 발생하는 'Physical key already pressed' Assertion 에러 방지를 위해
+    // 모든 키 이벤트를 게임 내에서 처리(handled)한 것으로 간주하여 전파를 막습니다.
+    return KeyEventResult.handled;
   }
 
   // --- Game Loop ---
@@ -337,7 +351,7 @@ class FastBallGame extends FlameGame with CollisionSystem {
       if (activeScoreBuffTimer > 0) finalMultiplier *= 2.0;
 
       score += (100 * finalMultiplier).toInt();
-      timeRemaining += timeGainOnKill;
+      timeRemaining += timeGainOnKill; // Increased in augment definition below
 
       if (e.isBoss) {
         _handleBossDeath();
@@ -407,9 +421,9 @@ class FastBallGame extends FlameGame with CollisionSystem {
 
     for (final p in players) {
       p.radius = 16 + playerRadiusBonus;
-      p.fixedSpeed = playerBaseSpeed + playerSpeedBonus;
+      p.fixedSpeed = (playerBaseSpeed + playerSpeedBonus) * penaltySpeedMultiplier;
       p.mass =
-          (16 + playerRadiusBonus) * (16 + playerRadiusBonus) + playerMassBonus;
+          (16 + playerRadiusBonus) * (16 + playerRadiusBonus) * (1.0 + playerMassBonus); // Multiplicative mass bonus
       p.maintainSpeed();
     }
 
@@ -493,8 +507,9 @@ class FastBallGame extends FlameGame with CollisionSystem {
         enemyArmorBonus = 1;
         break;
       case '속도 -20%':
+        penaltySpeedMultiplier = 0.8;
         for (final p in players) {
-          p.fixedSpeed *= 0.8;
+          p.fixedSpeed = (playerBaseSpeed + playerSpeedBonus) * penaltySpeedMultiplier;
           p.maintainSpeed();
         }
         break;

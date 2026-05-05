@@ -34,9 +34,9 @@ class Augment {
     ),
     const Augment(
       title: '무거운 프레임',
-      description: '질량 +0.8 (넉백 증가)',
+      description: '질량 +30% (넉백 증가)',
       type: AugmentType.mass,
-      value: 0.8,
+      value: 0.3,
       icon: Icons.fitness_center,
     ),
     const Augment(
@@ -55,11 +55,9 @@ class Augment {
     ),
     const Augment(
       title: '시간 흡수',
-
-      description: '처치 시 시간 +0.02초',
+      description: '처치 시 시간 +0.15초',
       type: AugmentType.timeOnKill,
-
-      value: 0.02,
+      value: 0.15,
       icon: Icons.timer,
     ),
   ];
