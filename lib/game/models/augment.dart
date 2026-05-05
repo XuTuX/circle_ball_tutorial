@@ -55,9 +55,11 @@ class Augment {
     ),
     const Augment(
       title: '시간 흡수',
-      description: '처치 시 시간 +0.7초',
+
+      description: '처치 시 시간 +0.02초',
       type: AugmentType.timeOnKill,
-      value: 0.7,
+
+      value: 0.02,
       icon: Icons.timer,
     ),
   ];
