@@ -5,6 +5,7 @@ class EnemyBall extends Ball {
   int hp = 3;
   final double hitCooldownDuration;
   double hitCooldown = 0;
+  bool isBoss;
 
   bool get isDead => hp <= 0;
   bool get canTakeDamage => hitCooldown <= 0;
@@ -15,7 +16,8 @@ class EnemyBall extends Ball {
     required super.velocity,
     required super.fixedSpeed,
     required this.hitCooldownDuration,
-  }) : super(color: Colors.greenAccent);
+    this.isBoss = false,
+  }) : super(color: isBoss ? Colors.deepPurpleAccent : Colors.greenAccent);
 
   void tickCooldown(double dt) {
     if (hitCooldown > 0) hitCooldown -= dt;
@@ -25,7 +27,9 @@ class EnemyBall extends Ball {
     if (!canTakeDamage) return;
     hp--;
     hitCooldown = hitCooldownDuration;
-    color = [Colors.redAccent, Colors.redAccent, Colors.yellowAccent, Colors.greenAccent][hp.clamp(0, 3)];
+    if (!isBoss) {
+      color = [Colors.redAccent, Colors.redAccent, Colors.yellowAccent, Colors.greenAccent][hp.clamp(0, 3)];
+    }
   }
 
   @override
@@ -34,7 +38,11 @@ class EnemyBall extends Ball {
     final tp = TextPainter(
       text: TextSpan(
         text: '$hp',
-        style: const TextStyle(color: Colors.black, fontSize: 9, fontWeight: FontWeight.bold),
+        style: TextStyle(
+          color: isBoss ? Colors.white : Colors.black, 
+          fontSize: isBoss ? 20 : 9, 
+          fontWeight: FontWeight.bold
+        ),
       ),
       textDirection: TextDirection.ltr,
     )..layout();
