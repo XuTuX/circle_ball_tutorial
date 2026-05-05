@@ -329,10 +329,11 @@ class FastBallGame extends FlameGame with CollisionSystem {
       score += (100 * finalMultiplier).toInt();
       timeRemaining += timeGainOnKill;
 
-      if (!isBossStage) {
-        _spawnEnemy();
-      } else if (e.isBoss) {
+      if (e.isBoss) {
         _handleBossDeath();
+      } else {
+        // 일반 적이 죽으면 항상 새 적 리스폰 (보스전 포함)
+        _spawnEnemy();
       }
     }
   }
@@ -435,6 +436,18 @@ class FastBallGame extends FlameGame with CollisionSystem {
 
     if (isBossStage) {
       _prepareBossStage();
+    } else {
+      // 일반 스테이지로 전환: 적이 부족하면 채워넣기
+      _refillEnemies();
+    }
+  }
+
+  void _refillEnemies() {
+    final currentCount = enemies.length;
+    if (currentCount < baseEnemyCount) {
+      for (int i = 0; i < baseEnemyCount - currentCount; i++) {
+        _spawnEnemy();
+      }
     }
   }
 
@@ -449,6 +462,12 @@ class FastBallGame extends FlameGame with CollisionSystem {
 
     _applyPenalty(currentPenalty!);
     _spawnBoss();
+
+    // 보스 스테이지에도 일반 적들 등장 (보스 집중 공략을 방해)
+    for (int i = 0; i < baseEnemyCount ~/ 2; i++) {
+      _spawnEnemy();
+    }
+
     overlays.add('PenaltyAlert');
   }
 
