@@ -83,133 +83,89 @@ class FastBallGame extends FlameGame {
   @override
   void update(double dt) {
     super.update(dt);
-
     final safeDt = dt.clamp(0.0, 1 / 60);
-
-    final allBalls = <Ball>[player, ...enemies];
 
     for (final enemy in enemies) {
       enemy.tickCooldown(safeDt);
     }
 
-    for (final ball in allBalls) {
-      ball.integrate(safeDt);
-      _resolveWallCollision(ball);
+    player.integrate(safeDt);
+    _resolveWallCollision(player);
+
+    for (final enemy in enemies) {
+      enemy.integrate(safeDt);
+      _resolveWallCollision(enemy);
     }
 
-    _resolveBallCollisions(allBalls);
+    _resolveCollisions();
     _checkEnemyHp();
   }
 
   void _resolveWallCollision(Ball ball) {
     final toBall = ball.position - arenaCenter;
     final distance = toBall.length;
-
     final maxDistance = arenaRadius - ball.radius;
 
     if (distance > maxDistance) {
       final normal = toBall.normalized();
-
-      // 원 밖으로 나간 공을 다시 원 안쪽 경계로 보정
       ball.position = arenaCenter + normal * maxDistance;
 
-      final dot = ball.velocity.dot(normal);
-
-      // 바깥쪽으로 향하고 있을 때만 반사
-      if (dot > 0) {
-        ball.velocity = ball.velocity - normal * (2 * dot);
-
-        // 너무 같은 경로만 반복하지 않도록 약간의 랜덤 각도 부여
-        final randomAngle = (random.nextDouble() - 0.5) * angleRandomness;
-        ball.velocity = rotateVector(ball.velocity, randomAngle);
-
+      if (ball.velocity.dot(normal) > 0) {
+        ball.velocity = rotateVector(ball.velocity - normal * (2 * ball.velocity.dot(normal)), (random.nextDouble() - 0.5) * angleRandomness);
         ball.maintainSpeed();
       }
     }
   }
 
-  void _resolveBallCollisions(List<Ball> balls) {
-    for (int i = 0; i < balls.length; i++) {
-      for (int j = i + 1; j < balls.length; j++) {
-        final a = balls[i];
-        final b = balls[j];
-
+  void _resolveCollisions() {
+    final all = [player, ...enemies];
+    for (int i = 0; i < all.length; i++) {
+      for (int j = i + 1; j < all.length; j++) {
+        final a = all[i], b = all[j];
         final delta = b.position - a.position;
-        final distance = delta.length;
-        final minDistance = a.radius + b.radius;
+        final dist = delta.length;
+        final minDist = a.radius + b.radius;
 
-        if (distance == 0 || distance >= minDistance) continue;
+        if (dist > 0 && dist < minDist) {
+          final normal = delta / dist;
+          final overlap = minDist - dist;
+          final totalMass = a.mass + b.mass;
+          a.position -= normal * overlap * (b.mass / totalMass);
+          b.position += normal * overlap * (a.mass / totalMass);
 
-        final normal = delta / distance;
-        final overlap = minDistance - distance;
+          final velAlongNormal = (b.velocity - a.velocity).dot(normal);
+          if (velAlongNormal <= 0) {
+            final impulse = normal * (-(2.0) * velAlongNormal / ((1 / a.mass) + (1 / b.mass)));
+            a.velocity -= impulse / a.mass;
+            b.velocity += impulse / b.mass;
+            a.maintainSpeed();
+            b.maintainSpeed();
+          }
 
-        // 겹쳐진 공을 질량 비율에 따라 분리
-        final totalMass = a.mass + b.mass;
-        a.position -= normal * overlap * (b.mass / totalMass);
-        b.position += normal * overlap * (a.mass / totalMass);
-
-        final relativeVelocity = b.velocity - a.velocity;
-        final velocityAlongNormal = relativeVelocity.dot(normal);
-
-        // 이미 서로 멀어지고 있으면 충돌 반응은 생략
-        if (velocityAlongNormal <= 0) {
-          const restitution = 1.0;
-
-          final impulseMagnitude =
-              -(1 + restitution) *
-              velocityAlongNormal /
-              ((1 / a.mass) + (1 / b.mass));
-
-          final impulse = normal * impulseMagnitude;
-
-          a.velocity -= impulse / a.mass;
-          b.velocity += impulse / b.mass;
-
-          a.maintainSpeed();
-          b.maintainSpeed();
+          if (a.isPlayer && b is EnemyBall) _damageEnemy(b, normal);
+          else if (b.isPlayer && a is EnemyBall) _damageEnemy(a, -normal);
         }
-
-        _handlePlayerEnemyHit(a, b, normal);
       }
     }
   }
 
-  void _handlePlayerEnemyHit(Ball a, Ball b, Vector2 normal) {
-    if (a.isPlayer && b is EnemyBall) {
-      _damageEnemy(enemy: b, directionFromPlayerToEnemy: normal);
-    } else if (b.isPlayer && a is EnemyBall) {
-      _damageEnemy(enemy: a, directionFromPlayerToEnemy: -normal);
-    }
-  }
-
-  void _damageEnemy({
-    required EnemyBall enemy,
-    required Vector2 directionFromPlayerToEnemy,
-  }) {
+  void _damageEnemy(EnemyBall enemy, Vector2 dir) {
     if (!enemy.canTakeDamage) return;
-
     enemy.takeDamage();
-
-    // hp가 0이 되면 넉백 없이 바로 삭제 대상으로 둠
-    if (enemy.isDead) {
-      return;
-    }
-
-    // 살아있는 적만 넉백
-    enemy.position += directionFromPlayerToEnemy * enemyKnockbackDistance;
-    enemy.velocity = directionFromPlayerToEnemy * enemy.fixedSpeed;
-
+    if (enemy.isDead) return;
+    enemy.position += dir * enemyKnockbackDistance;
+    enemy.velocity = dir * enemy.fixedSpeed;
     _resolveWallCollision(enemy);
   }
 
   void _checkEnemyHp() {
-    final deadEnemies = enemies.where((enemy) => enemy.isDead).toList();
-
-    for (final enemy in deadEnemies) {
-      enemies.remove(enemy);
-      enemy.removeFromParent();
-
-      _spawnEnemy();
-    }
+    enemies.removeWhere((e) {
+      if (e.isDead) {
+        e.removeFromParent();
+        _spawnEnemy();
+        return true;
+      }
+      return false;
+    });
   }
 }
